@@ -53,7 +53,7 @@ ax2.set_xticklabels(day[::5])
 ax2.grid(True)
 
 # step 4 show plot
-def runnig(save_dir="./static", filename="k_line_chart.png"):
+def runnig(save_dir="./static", filename="k_line_chart.jpg")
     os.makedirs(save_dir, exist_ok=True)
     save_path = os.path.join(save_dir, filename)
     plt.savefig(save_path, bbox_inches='tight')

@@ -1,24 +1,25 @@
 import os
-import crawler_module as m
 from time import sleep
 import pandas as pd
 import matplotlib.pyplot as plt
 import mpl_finance as mpf
 from flask import Flask, request, abort
+import crawler_module as m
+
 from linebot.v3 import WebhookHandler
 from linebot.v3.exceptions import InvalidSignatureError
 from linebot.v3.messaging import (
-    Configuration, ApiClient, MessagingApi, ReplyMessageRequest,
+    Configuration, ApiClient, MessagingApi,
+    ReplyMessageRequest, PushMessageRequest,
     TextMessage, ImageMessage
 )
 from linebot.v3.webhooks import MessageEvent, TextMessageContent
 
 app = Flask(__name__)
-
 configuration = Configuration(access_token='YsYMRBHXws+LOIDe1EmNizRNyjA9Y0Rz/+DLKs0XXL5j3rbKyzPou56BHYB6p97c2bCb5Wp4gYTYCqOOEeProv54/e6RBczMXm62qKoA+ErewGWsQZuXMPjVTkWuEJ5YZfnBzBwjiHPmzTOVAG2EIgdB04t89/1O/w1cDnyilFU=')
 handler = WebhookHandler('5fcd4f4e01583c44f9bad74a835b3aed')
 
-# 🔁 用戶輸入狀態追蹤
+# 🔁 使用者輸入狀態追蹤
 user_states = {}
 
 @app.route("/callback", methods=['POST'])
@@ -31,15 +32,11 @@ def callback():
         abort(400)
     return 'OK'
 
-from linebot.v3.messaging import PushMessageRequest
-
-# 其他程式碼保持不變
-
 @handler.add(MessageEvent, message=TextMessageContent)
 def handle_message(event):
     user_id = event.source.user_id
     text = event.message.text.strip()
-    
+
     with ApiClient(configuration) as api_client:
         line_bot_api = MessagingApi(api_client)
 
@@ -75,9 +72,9 @@ def handle_message(event):
                     f.write(f"{state['symbol']},{state['start']},{state['end']}")
 
                 # 回覆等待訊息
-                line_bot_api.reply_message_with_http_info(
-                    ReplyMessageRequest(
-                        reply_token=event.reply_token,
+                line_bot_api.push_message(
+                    PushMessageRequest(
+                        to=user_id,
                         messages=[TextMessage(text="資料處理中，請稍後...")]
                     )
                 )
@@ -122,34 +119,33 @@ def handle_message(event):
                 ax2.set_xticklabels(day[::5])
                 ax2.grid(True)
 
-                save_path = "./static/k_line_chart.png"
+                save_path = "./static/k_line_chart.jpg"
                 os.makedirs("./static", exist_ok=True)
                 plt.savefig(save_path, bbox_inches='tight')
                 plt.close()
 
-                image_url = request.url_root + "static/k_line_chart.png"
-                image_url = image_url.replace("http" , "https")
-                app.logger.info("url=" +image_url)
-                
-                line_bot_api.reply_message(
-                    reply_token=event.reply_token,
-                    image_message = [ImageMessage(
+                image_url = request.url_root + "static/k_line_chart.jpg"
+                image_url = image_url.replace("http", "https")
+                image_message = ImageMessage(
                     original_content_url=image_url,
                     preview_image_url=image_url
-                )]
+                )
+                line_bot_api.push_message(
+                    PushMessageRequest(
+                        to=user_id,
+                        messages=[image_message]
+                    )
                 )
 
-                # 重設狀態
                 user_states[user_id] = {"step": -1}
                 return
             else:
                 reply = "格式錯誤，請重新輸入結束日期（YYYYMMDD）"
-
         else:
             reply = "請輸入「股票資訊」來查詢 K 線圖"
 
-        # 回覆文字
-        line_bot_api.reply_message_with_http_info(
+        # 回覆訊息
+        line_bot_api.reply_message(
             ReplyMessageRequest(
                 reply_token=event.reply_token,
                 messages=[TextMessage(text=reply)]
@@ -158,6 +154,3 @@ def handle_message(event):
 
 if __name__ == "__main__":
     app.run()
-
-
-
