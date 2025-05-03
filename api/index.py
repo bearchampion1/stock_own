@@ -1,13 +1,11 @@
-# api/callback.py
 import os
 from time import sleep
 import pandas as pd
 import matplotlib.pyplot as plt
 import mpl_finance as mpf
-from flask import Flask
-from flask import request, abort, send_from_directory
+from flask import Flask, request, abort, send_from_directory
 import crawler_module as m
-
+from dotenv import load_dotenv
 from linebot.v3 import WebhookHandler
 from linebot.v3.exceptions import InvalidSignatureError
 from linebot.v3.messaging import (
@@ -17,14 +15,24 @@ from linebot.v3.messaging import (
 )
 from linebot.v3.webhooks import MessageEvent, TextMessageContent
 
+# 加載環境變數
+load_dotenv("./id.env")
+
+# 初始化 Flask 應用程式
 app = Flask(__name__)
 
-configuration = Configuration(access_token='YsYMRBHXws+LOIDe1EmNizRNyjA9Y0Rz/+DLKs0XXL5j3rbKyzPou56BHYB6p97c2bCb5Wp4gYTYCqOOEeProv54/e6RBczMXm62qKoA+ErewGWsQZuXMPjVTkWuEJ5YZfnBzBwjiHPmzTOVAG2EIgdB04t89/1O/w1cDnyilFU=')
-handler = WebhookHandler('5fcd4f4e01583c44f9bad74a835b3aed')
+# 從環境變數獲取 LINE 配置
+line_access_token = os.environ.get("LINE_ACCESS_TOKEN")
+line_channel_secret = os.environ.get("LINE_CHANNEL_SECRET")
 
-user_states = {}
+# 檢查是否成功加載環境變數
+print("LINE_ACCESS_TOKEN:", line_access_token)
+print("LINE_CHANNEL_SECRET:", line_channel_secret)
 
-# 🔁 使用者輸入狀態追蹤
+# 配置 LINE Bot
+configuration = Configuration(line_access_token)
+handler = WebhookHandler(line_channel_secret)
+
 user_states = {}
 
 @app.route("/callback", methods=['POST'])
@@ -159,4 +167,3 @@ def handle_message(event):
 
 if __name__ == "__main__":
     app.run()
-
