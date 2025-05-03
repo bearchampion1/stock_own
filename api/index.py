@@ -16,7 +16,7 @@ from linebot.v3.messaging import (
 from linebot.v3.webhooks import MessageEvent, TextMessageContent
 
 # 加載環境變數
-load_dotenv("./id.env")
+load_dotenv("id.env")
 
 # 初始化 Flask 應用程式
 app = Flask(__name__)
@@ -30,11 +30,12 @@ print("LINE_ACCESS_TOKEN:", line_access_token)
 print("LINE_CHANNEL_SECRET:", line_channel_secret)
 
 # 配置 LINE Bot
-configuration = Configuration(line_access_token)
+configuration = Configuration(access_token=line_access_token)
 handler = WebhookHandler(line_channel_secret)
 
 user_states = {}
-
+def  webhook_handler(environ, start_response):
+    return app(environ, start_response)
 @app.route("/callback", methods=['POST'])
 def callback():
     signature = request.headers['X-Line-Signature']
@@ -165,5 +166,4 @@ def handle_message(event):
             )
         )
 
-if __name__ == "__main__":
-    app.run()
+
