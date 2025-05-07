@@ -31,7 +31,7 @@ print("LINE_CHANNEL_SECRET:", line_channel_secret)
 
 # 配置 LINE Bot
 configuration = Configuration(access_token=line_access_token)
-handler = WebhookHandler(line_channel_secret)
+whandler = WebhookHandler(line_channel_secret)
 
 user_states = {}
 def  webhook_handler(environ, start_response):
@@ -46,12 +46,12 @@ def callback():
     signature = request.headers['X-Line-Signature']
     body = request.get_data(as_text=True)
     try:
-        handler.handle(body, signature)
+        whandler.handle(body, signature)
     except InvalidSignatureError:
         abort(400)
     return 'OK'
 
-@handler.add(MessageEvent, message=TextMessageContent)
+@whandler.add(MessageEvent, message=TextMessageContent)
 def handle_message(event):
     user_id = event.source.user_id
     text = event.message.text.strip()
