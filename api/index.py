@@ -36,6 +36,11 @@ handler = WebhookHandler(line_channel_secret)
 user_states = {}
 def  webhook_handler(environ, start_response):
     return app(environ, start_response)
+
+@app.route("/", methods=["GET"])
+def index():
+    return "The server is running!"
+
 @app.route("/callback", methods=['POST'])
 def callback():
     signature = request.headers['X-Line-Signature']
