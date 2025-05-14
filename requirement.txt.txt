@@ -1,6 +1,0 @@
-flask
-flask-lambda
-line-bot-sdk
-matplotlib
-pandas
-mplfinance
