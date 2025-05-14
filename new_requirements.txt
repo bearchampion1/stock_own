@@ -1,0 +1,5 @@
+flask
+yfinance
+mplfinance
+python-dotenv
+line-bot-sdk==3.*
